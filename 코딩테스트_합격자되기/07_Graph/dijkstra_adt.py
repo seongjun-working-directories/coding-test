@@ -33,24 +33,48 @@
 import heapq
 
 def dijkstra(graph, start):
+    distances = { node: float("inf") for node in graph }    # {'A': inf, 'B': inf, 'C': inf}
+    distances[start] = 0                                    # {'A': 0, 'B': inf, 'C': inf}
     
-    # 모든 노드의 거리값을 양의 무한대로 초기화
-    distances = { node: float("inf") for node in graph }
-    # print(distances)    # {'A': inf, 'B': inf, 'C': inf}
-
-    # 시작 노드의 거리값을 0으로 초기화
-    distances[start] = 0
-
+    # 거리를 계산하기 위한 큐(Queue)
     queue = []
+    heapq.heappush(queue, [distances[start], start])        # [[0, 'A']]
+    
+    # 도착점과 도착점에 도달하기 위한 경로를 저장
+    paths = { start: [start] }                              # {'A': ['A']}
+    
+    while queue:
+        # queue에서 가장 거리값이 작은 노드를 가져옴
+        current_distance, current_node = heapq.heappop(queue)
 
-    # 시작 노드를 큐에 삽입
-    heapq.heappush(queue, [distances[start], start])
+        # 현재 노드 거리값 > 큐에서 가져온 거리값 이라면, 해당 노드는 계산할 필요가 없음
+        if current_distance > distances[current_node]:
+            continue
 
-    # 시작 노드의 경로를 초기화
-    paths = {start: [start]}
+        # 주의! 현재 노드는 이미 최적의 값이 계산되어 있으며,
+        # 다음에 나오는 for문은 인접한 노드들의 거리값을 계산하기 위한 것
+        for adjacent_node, weight in graph[current_node].items():   # B 9 -> C 3 순
+            # 현재 노드까지 오기 위한 최적값 + 현재 노드에서 타겟 노드(인접 노드)까지의 거리값
+            distance = current_distance + weight
 
-    ########## 이 부분 채워나가야 함 ##########
+            # 현재 계산한 거리값이 기존 거리값보다 작으면 distance에 작성된 값을 업데이트
+            if distance < distances[adjacent_node]:
+                distances[adjacent_node] = distance
+                # 뿐만 아니라, paths에 작성한 최단 경로도 업데이트를 해줘야 함
+                paths[adjacent_node] = paths[current_node] + [adjacent_node]
 
+                # 최소 경로가 갱신된 노드를 비용과 함께 큐(Queue)에 푸쉬
+                # 주의! 다익스트라(dijkstra) 알고리즘은 최적의 값을 계산 후 큐(Queue)에 푸쉬함
+                heapq.heappush(queue, [distances[adjacent_node], adjacent_node])
+                
+                # print(queue)
+                # [[9, 'B']]
+                # [[3, 'C'], [9, 'B']]
+                # [[4, 'B'], [9, 'B']]
+    
+    # print(paths)  # {'A': ['A'], 'B': ['A', 'C', 'B'], 'C': ['A', 'C']}
+
+    # paths 딕셔너리를 노드 번호에 따라 오름차순 정려랗여 반환
     sorted_paths = { node: paths[node] for node in sorted(paths) }
 
     return [distances, sorted_paths]
