@@ -29,11 +29,61 @@ maps	                                        result
 ["SOOOL","XXXXO","OOOOO","OXXXX","OOOOE"]	    16
 ["LOOXS","OOOOX","OOOOO","OOOOO","EOOOO"]	    -1
 '''
-def solution_me(maps):
-    pass
+from collections import deque
+
+def is_valid_move(ny, nx, n, m, maps):
+    return (0<=ny<n) and (0<=nx<m) and (maps[ny][nx] != "X")
+
+def append_to_queue(ny, nx, k, time, visited, q):
+    if not visited[ny][nx][k]:
+        visited[ny][nx][k] = True
+        q.append((ny, nx, k, time+1))
 
 def solution(maps):
-    pass
+    n, m = len(maps), len(maps[0])
+    visited = [
+        [
+            [
+                False for _ in range(2) # 방문 여부 및 레버 눌림 여부 체크
+            ] for _ in range(m)
+        ] for _ in range(n)
+    ]
+    
+    # 상하좌우 이동 좌표 -> (y + dy[0], x + dx[0]), ...
+    dy = [-1, 1, 0, 0]
+    dx = [0, 0, -1, 1]
 
-print(solution_me(["SOOOL","XXXXO","OOOOO","OXXXX","OOOOE"]))
+    q = deque()
+    end_y, end_x = -1, -1
+
+    # 시작점 및 도착점 세팅
+    for i in range(n):
+        for j in range(m):
+            if maps[i][j] == "S":
+                q.append((i, j, 0, 0))
+                visited[i][j][0] = True
+            if maps[i][j] == "E":
+                end_y, end_x = i, j
+
+    while q:
+        y, x, k, time = q.popleft() # k는 레버 눌림 여부, time은 카운트 횟수
+
+        if y == end_y and x == end_x and k == 1:
+            return time
+
+        for i in range(4):
+            ny, nx = y + dy[i], x + dx[i]
+
+            if not is_valid_move(ny, nx, n, m, maps):
+                continue
+            
+            if maps[ny][nx] == "L":
+                append_to_queue(ny, nx, 1, time, visited, q)    # 레버가 눌린 순간 k는 이후에 1이 기록됨
+            
+            else:
+                append_to_queue(ny, nx, k, time, visited, q)
+            
+    return -1
+
 print(solution(["SOOOL","XXXXO","OOOOO","OXXXX","OOOOE"]))
+print(solution(["LOOXS","OOOOX","OOOOO","OOOOO","EOOOO"]))
