@@ -49,11 +49,156 @@
 nodeinfo	                                                result
 [[5,3],[11,5],[13,3],[3,5],[6,1],[1,3],[8,6],[7,2],[2,2]]	[[7,4,6,9,1,8,5,2,3],[9,6,5,8,1,4,3,2,7]]
 '''
-def solution_me(nodeinfo):
-    pass
+# from collections import deque
+
+# class Node:
+#     def __init__(self, id, x, y):
+#         self.id = id
+#         self.x = x
+#         self.y = y
+#         self.left = None
+#         self.right = None    
+
+# def sort_tree(nodeinfo):
+#     sorted_nodeinfo = []
+#     for i in range(len(nodeinfo)):
+#         sorted_nodeinfo.append((i+1, nodeinfo[i]))
+#     sorted_nodeinfo.sort(key=lambda x: x[1][1], reverse=True)
+#     nodeinfo_deque = deque(sorted_nodeinfo)
+#     return nodeinfo_deque
+
+# def preorder(root):
+#     result = []
+#     stack = [root]
+#     while stack:
+#         node = stack.pop()
+#         if node is None:
+#             continue
+#         result.append(node.id)
+#         stack.append(node.right)
+#         stack.append(node.left)
+#     return result
+
+# def postorder(root):
+#     result = []
+#     stack = [(root, False)]
+#     while stack:
+#         node, visited = stack.pop()
+#         if node is None:
+#             continue
+#         if visited:
+#             result.append(node.id)
+#         else:
+#             stack.append((node, True))
+#             stack.append((node.right, False))
+#             stack.append((node.left, False))
+#     return result
+
+# def solution_me(nodeinfo):
+#     nodeinfo_deque = sort_tree(nodeinfo)
+#     print(nodeinfo_deque)
+    
+#     element = nodeinfo_deque.popleft()
+#     root = Node(element[0], element[1][0], element[1][1])
+#     level = 1
+    
+#     while nodeinfo_deque:
+#         previous_compared_element = root
+#         compared_element = root
+#         element = nodeinfo_deque.popleft()
+#         is_left = True
+        
+#         while compared_element:
+#             if compared_element.x < element[1][0]:
+#                 previous_compared_element = compared_element
+#                 compared_element = compared_element.right
+#                 is_left = False
+#             else:
+#                 previous_compared_element = compared_element
+#                 compared_element = compared_element.left
+#                 is_left = True
+#         if is_left:
+#             previous_compared_element.left = Node(element[0], element[1][0], element[1][1])
+#         else:
+#             previous_compared_element.right = Node(element[0], element[1][0], element[1][1])
+    
+#     return [preorder(root), postorder(root)]
+    
+
+from collections import deque
+
+class Node:
+    def __init__(self, info, num, left=None, right=None):
+        self.info = info
+        self.num = num
+        self.left = left
+        self.right = right
+
+    def has_left(self):
+        return self.left is not None
+
+    def has_right(self):
+        return self.right is not None
+
+def make_binary_tree(nodeinfo):
+    nodes = [i for i in range(1, len(nodeinfo)+1)]
+    nodes.sort(key=lambda x: (nodeinfo[x-1][1], -nodeinfo[x-1][0]), reverse=True)
+    root = None
+
+    for i in range(len(nodes)):
+        if root is None:
+            root = Node(nodeinfo[nodes[0]-1], nodes[0])
+        else:
+            parent = root
+            node = Node(nodeinfo[nodes[i]-1], nodes[i])
+    
+            while True:
+                if node.info[0] < parent.info[0]:
+                    if parent.has_left():
+                        parent = parent.left
+                        continue
+                    parent.left = node
+                    break
+                else:
+                    if parent.has_right():
+                        parent = parent.right
+                        continue
+                    parent.right = node
+                    break
+
+    return root
+
+def preorder(root):
+    result = []
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node is None:
+            continue
+        result.append(node.num)
+        stack.append(node.right)
+        stack.append(node.left)
+    return result
+
+def postorder(root):
+    result = []
+    stack = [(root, False)]
+    while stack:
+        node, visited = stack.pop()
+        if node is None:
+            continue
+        if visited:
+            result.append(node.num)
+        else:
+            stack.append((node, True))
+            stack.append((node.right, False))
+            stack.append((node.left, False))
+    return result
 
 def solution(nodeinfo):
-    pass
+    root = make_binary_tree(nodeinfo)
+    return [preorder(root), postorder(root)]
 
-print(solution_me([[5,3],[11,5],[13,3],[3,5],[6,1],[1,3],[8,6],[7,2],[2,2]]))
+
+# print(solution_me([[5,3],[11,5],[13,3],[3,5],[6,1],[1,3],[8,6],[7,2],[2,2]]))
 print(solution([[5,3],[11,5],[13,3],[3,5],[6,1],[1,3],[8,6],[7,2],[2,2]]))
