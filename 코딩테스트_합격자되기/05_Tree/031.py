@@ -51,16 +51,50 @@ info	                    edges	                                    result
 [0,1,0,1,1,0,1,0,0,1,0]	    [[0,1],[0,2],[1,3],[1,4],[2,5],             5
                              [2,6],[3,7],[4,8],[6,9],[9,10]]
 '''
-def solution_me(info, edges):
-    pass
+from collections import deque
+
+def tree_builder(edges):
+    tree = [[] for _ in range(len(edges)+1)]
+    for edge in edges:
+        tree[edge[0]].append(edge[1])
+    return tree
 
 def solution(info, edges):
-    pass
+    MAX_SHEEP = 0
+    
+    tree = tree_builder(edges)
+    
+    # BFS를 위한 큐 생성 및 초기상태 설정
+    # 현재 위치 / 양의 수 / 늑대의 수 / 방문한 노드 집합
+    queue = deque([(0, 1, 0, set())])
+    
+    # BFS 시작
+    while queue:
+        current_location, sheep_num, wolf_num, visited_set = queue.popleft()
+        
+        # MAX_SHEEP 업데이트
+        MAX_SHEEP = max(MAX_SHEEP, sheep_num)
+        
+        # 방문한 노드 집합에 현재 노드의 이웃 노드 추가를 먼저하고
+        # 인접한 노드들에 대해 탐색을 진행
+        visited_set.update(tree[current_location])
+        
+        for next_node in visited_set:
+            # 늑대인 경우임에도 양의 수가 더 많다면 큐에 추가
+            if info[next_node]:
+                if sheep_num != wolf_num + 1:
+                    queue.append(
+                        # visited_set-{next_node} 의 이유는
+                        # 다음 노드를 가기 전에 방문 목록을 미리 정리하여 방문한 노드를 다시 방문하지 않도록 하기 위함
+                        (next_node, sheep_num, wolf_num+1, visited_set-{next_node})
+                    )
+            else:
+                queue.append(
+                    (next_node, sheep_num+1, wolf_num, visited_set-{next_node})
+                )
 
-print(solution_me(
-    [0,0,1,1,1,0,1,0,1,0,1,1],
-    [[0,1],[1,2],[1,4],[0,8],[8,7],[9,10],[9,11],[4,3],[6,5],[4,6],[8,9]]
-))
+    return MAX_SHEEP
+
 print(solution(
     [0,0,1,1,1,0,1,0,1,0,1,1],
     [[0,1],[1,2],[1,4],[0,8],[8,7],[9,10],[9,11],[4,3],[6,5],[4,6],[8,9]]
