@@ -65,9 +65,11 @@ def tree_builder(n, wires):
         graph[b].append(a)
     return graph
 
+# 중요!
 def dfs(graph, node, parent):
     cnt = 1
     for child in graph[node]:
+        # child != parent 만으로 역으로 올라오는 상황을 방지할 수 있음
         if child != parent:
             cnt += dfs(graph, child, node)
     return cnt
